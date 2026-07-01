@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../data/services/auth_service.dart';
+import '../widgets/glossy_widgets.dart';
 import 'main_screen.dart';
 import 'register_screen.dart';
 
@@ -66,54 +67,41 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return Scaffold(
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Header Design
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: colorScheme.primary.withOpacity(0.1),
-                    shape: BoxShape.circle,
+      backgroundColor: Colors.transparent,
+      body: GlossyBackground(
+        child: SafeArea(
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 32.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Minimal Header
+                  const Text(
+                    'Welcome back.',
+                    style: TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: -1,
+                      color: Color(0xFF1E293B),
+                    ),
+                    textAlign: TextAlign.left,
                   ),
-                  child: Icon(
-                    Icons.fingerprint,
-                    size: 64,
-                    color: colorScheme.primary,
+                  const SizedBox(height: 8),
+                  const Text(
+                    'Masuk ke akun Anda untuk melanjutkan.',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Color(0xFF9CA3AF),
+                    ),
+                    textAlign: TextAlign.left,
                   ),
-                ),
-                const SizedBox(height: 24),
-                const Text(
-                  'Selamat Datang',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: -0.5,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Silakan login untuk melanjutkan',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.grey.shade600,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 48),
+                  const SizedBox(height: 48),
 
-                // Form Area
-                Card(
-                  child: Padding(
+                  // Form Area
+                  GlossyCard(
                     padding: const EdgeInsets.all(24.0),
                     child: Form(
                       key: _formKey,
@@ -122,9 +110,12 @@ class _LoginScreenState extends State<LoginScreen> {
                         children: [
                           TextFormField(
                             controller: _emailController,
-                            decoration: const InputDecoration(
-                              labelText: 'Email',
-                              prefixIcon: Icon(Icons.email_outlined),
+                            style: const TextStyle(color: Color(0xFF1E293B)),
+                            decoration: InputDecoration(
+                              hintText: 'Email address',
+                              prefixIcon: const Icon(Icons.email_outlined),
+                              filled: true,
+                              fillColor: Colors.white.withOpacity(0.8),
                             ),
                             keyboardType: TextInputType.emailAddress,
                             validator: (value) {
@@ -137,16 +128,19 @@ class _LoginScreenState extends State<LoginScreen> {
                               return null;
                             },
                           ),
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 16),
                           TextFormField(
                             controller: _passwordController,
+                            style: const TextStyle(color: Color(0xFF1E293B)),
                             decoration: InputDecoration(
-                              labelText: 'Password',
+                              hintText: 'Password',
                               prefixIcon: const Icon(Icons.lock_outline),
+                              filled: true,
+                              fillColor: Colors.white.withOpacity(0.8),
                               suffixIcon: IconButton(
                                 icon: Icon(
                                   _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
-                                  color: Colors.grey.shade600,
+                                  color: const Color(0xFF9CA3AF),
                                 ),
                                 onPressed: () {
                                   setState(() {
@@ -166,6 +160,9 @@ class _LoginScreenState extends State<LoginScreen> {
                           const SizedBox(height: 32),
                           ElevatedButton(
                             onPressed: _isLoading ? null : _handleLogin,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF8EC5FC),
+                            ),
                             child: _isLoading
                                 ? const SizedBox(
                                     height: 20,
@@ -175,38 +172,41 @@ class _LoginScreenState extends State<LoginScreen> {
                                       color: Colors.white,
                                     ),
                                   )
-                                : const Text('MASUK SEKARANG'),
+                                : const Text('MASUK'),
                           ),
                         ],
                       ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 32),
-                
-                // Footer
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      'Belum punya akun?',
-                      style: TextStyle(color: Colors.grey.shade600),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (_) => const RegisterScreen()),
-                        );
-                      },
-                      child: const Text(
-                        'Daftar di sini',
-                        style: TextStyle(fontWeight: FontWeight.bold),
+                  const SizedBox(height: 32),
+                  
+                  // Footer
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text(
+                        'Belum punya akun?',
+                        style: TextStyle(color: Color(0xFF9CA3AF)),
                       ),
-                    ),
-                  ],
-                ),
-              ],
+                      TextButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (_) => const RegisterScreen()),
+                          );
+                        },
+                        child: const Text(
+                          'Daftar di sini',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF9CA3AF),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -214,3 +214,4 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 }
+

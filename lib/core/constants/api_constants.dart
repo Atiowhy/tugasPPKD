@@ -12,4 +12,10 @@ class ApiConstants {
   // Data
   static const String trainings = '$baseUrl/trainings';
   static const String batches = '$baseUrl/batches';
+
+  // Absensi
+  static const String checkIn = '$baseUrl/absen/check-in';
+  static const String checkOut = '$baseUrl/absen/check-out';
+  static const String historyAbsen = '$baseUrl/absen/history';
+  static const String deleteAbsen = '$baseUrl/absen';
 }

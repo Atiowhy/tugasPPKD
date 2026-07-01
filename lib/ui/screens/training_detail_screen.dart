@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../data/models/training_model.dart';
 import '../../data/services/data_service.dart';
+import '../widgets/glossy_widgets.dart';
 
 class TrainingDetailScreen extends StatefulWidget {
   final int trainingId;
@@ -38,10 +39,10 @@ class _TrainingDetailScreenState extends State<TrainingDetailScreen> {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: const Color(0xFF06B6D4).withOpacity(0.1),
+              color: Colors.white.withOpacity(0.6),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(icon, color: const Color(0xFF06B6D4), size: 20),
+            child: Icon(icon, color: const Color(0xFF1E293B), size: 20),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -50,9 +51,9 @@ class _TrainingDetailScreenState extends State<TrainingDetailScreen> {
               children: [
                 Text(
                   title,
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 12,
-                    color: Colors.grey.shade600,
+                    color: Color(0xFF9CA3AF),
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -61,6 +62,7 @@ class _TrainingDetailScreenState extends State<TrainingDetailScreen> {
                   value,
                   style: const TextStyle(
                     fontSize: 16,
+                    color: Color(0xFF1E293B),
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -75,126 +77,130 @@ class _TrainingDetailScreenState extends State<TrainingDetailScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         title: const Text('Detail Pelatihan', style: TextStyle(fontWeight: FontWeight.w600)),
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.transparent,
+        iconTheme: const IconThemeData(color: Color(0xFF1E293B)),
       ),
-      body: RefreshIndicator(
-        onRefresh: _refreshData,
-        child: FutureBuilder<TrainingModel>(
-          future: _trainingDetailFuture,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            }
 
-            if (snapshot.hasError) {
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Icon(Icons.error_outline, size: 48, color: Colors.redAccent),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Gagal memuat detail:\n${snapshot.error}',
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(color: Colors.redAccent),
-                    ),
-                    const SizedBox(height: 16),
-                    ElevatedButton(
-                      onPressed: _refreshData,
-                      child: const Text('COBA LAGI'),
-                    )
-                  ],
-                ),
-              );
-            }
+      body: GlossyBackground(
+        child: SafeArea(
+          child: RefreshIndicator(
+            onRefresh: _refreshData,
+            child: FutureBuilder<TrainingModel>(
+              future: _trainingDetailFuture,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                }
 
-            final training = snapshot.data;
-            if (training == null) {
-              return const Center(child: Text('Data tidak ditemukan'));
-            }
-
-            return SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(24),
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF4F46E5), Color(0xFF06B6D4)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: const Color(0xFF4F46E5).withOpacity(0.3),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
+                if (snapshot.hasError) {
+                  return Center(
                     child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.school, size: 64, color: Colors.white),
+                        const Icon(Icons.error_outline, size: 48, color: Colors.redAccent),
                         const SizedBox(height: 16),
                         Text(
-                          training.title,
+                          'Gagal memuat detail:\n${snapshot.error}',
                           textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
+                          style: const TextStyle(color: Colors.redAccent),
                         ),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          onPressed: _refreshData,
+                          child: const Text('COBA LAGI'),
+                        )
                       ],
                     ),
-                  ),
-                  const SizedBox(height: 32),
-                  const Text(
-                    'Informasi Pelatihan',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 16),
-                  Card(
-                    child: Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: Column(
-                        children: [
-                          _buildInfoRow(
-                            Icons.description_outlined,
-                            'Deskripsi',
-                            training.description ?? 'Tidak ada deskripsi',
-                          ),
-                          _buildInfoRow(
-                            Icons.people_outline,
-                            'Jumlah Peserta',
-                            training.participantCount?.toString() ?? 'Belum ditentukan',
-                          ),
-                          _buildInfoRow(
-                            Icons.check_circle_outline,
-                            'Standar Kompetensi',
-                            training.standard ?? 'Belum ditentukan',
-                          ),
-                          _buildInfoRow(
-                            Icons.timer_outlined,
-                            'Durasi',
-                            training.duration ?? 'Belum ditentukan',
-                          ),
-                        ],
+                  );
+                }
+
+                final training = snapshot.data;
+                if (training == null) {
+                  return const Center(child: Text('Data tidak ditemukan', style: TextStyle(color: Color(0xFF1E293B))));
+                }
+
+                return SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(color: Colors.white.withOpacity(0.8)),
+                        ),
+                        child: Column(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.8),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(Icons.school_rounded, size: 48, color: Color(0xFF1E293B)),
+                            ),
+                            const SizedBox(height: 16),
+                            Text(
+                              training.title,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF1E293B),
+                                letterSpacing: -0.5,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
+                      const SizedBox(height: 32),
+                      const Text(
+                        'Informasi Pelatihan',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1E293B)),
+                      ),
+                      const SizedBox(height: 16),
+                      GlossyCard(
+                        padding: const EdgeInsets.all(20),
+                        child: Column(
+                          children: [
+                            _buildInfoRow(
+                              Icons.description_outlined,
+                              'Deskripsi',
+                              training.description ?? 'Tidak ada deskripsi',
+                            ),
+                            _buildInfoRow(
+                              Icons.people_outline,
+                              'Jumlah Peserta',
+                              training.participantCount?.toString() ?? 'Belum ditentukan',
+                            ),
+                            _buildInfoRow(
+                              Icons.check_circle_outline,
+                              'Standar Kompetensi',
+                              training.standard ?? 'Belum ditentukan',
+                            ),
+                            _buildInfoRow(
+                              Icons.timer_outlined,
+                              'Durasi',
+                              training.duration ?? 'Belum ditentukan',
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            );
-          },
+                );
+              },
+            ),
+          ),
         ),
       ),
     );
   }
 }
+

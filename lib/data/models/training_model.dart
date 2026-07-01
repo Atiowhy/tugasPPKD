@@ -1,11 +1,19 @@
+import 'package:json_annotation/json_annotation.dart';
+
+part 'training_model.g.dart';
+
+@JsonSerializable()
 class TrainingModel {
   final int id;
   final String title;
   final String? description;
+  @JsonKey(name: 'participant_count', fromJson: _parseInt)
   final int? participantCount;
   final String? standard;
   final String? duration;
+  @JsonKey(name: 'created_at')
   final String? createdAt;
+  @JsonKey(name: 'updated_at')
   final String? updatedAt;
 
   TrainingModel({
@@ -19,31 +27,12 @@ class TrainingModel {
     this.updatedAt,
   });
 
-  factory TrainingModel.fromJson(Map<String, dynamic> json) {
-    return TrainingModel(
-      id: json['id'] ?? 0,
-      title: json['title'] ?? '',
-      description: json['description'],
-      participantCount: json['participant_count'] != null
-          ? int.tryParse(json['participant_count'].toString())
-          : null,
-      standard: json['standard'],
-      duration: json['duration'],
-      createdAt: json['created_at'],
-      updatedAt: json['updated_at'],
-    );
+  static int? _parseInt(dynamic value) {
+    if (value == null) return null;
+    return int.tryParse(value.toString());
   }
 
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'title': title,
-      'description': description,
-      'participant_count': participantCount,
-      'standard': standard,
-      'duration': duration,
-      'created_at': createdAt,
-      'updated_at': updatedAt,
-    };
-  }
+  factory TrainingModel.fromJson(Map<String, dynamic> json) => _$TrainingModelFromJson(json);
+
+  Map<String, dynamic> toJson() => _$TrainingModelToJson(this);
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../data/services/auth_service.dart';
 import '../../data/services/data_service.dart';
+import '../widgets/glossy_widgets.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -86,38 +87,40 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return Scaffold(
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         title: const Text('Buat Akun Baru', style: TextStyle(fontWeight: FontWeight.w600)),
+        backgroundColor: Colors.transparent,
+        iconTheme: const IconThemeData(color: Color(0xFF1E293B)),
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                'Lengkapi Data Diri',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: colorScheme.onSurface,
-                  letterSpacing: -0.5,
+
+      body: GlossyBackground(
+        child: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 24.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const Text(
+                  'Lengkapi Data Diri.',
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF1E293B),
+                    letterSpacing: -1,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Isi formulir di bawah ini untuk mendaftar pelatihan',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey.shade600,
+                const SizedBox(height: 8),
+                const Text(
+                  'Isi formulir di bawah ini untuk mendaftar pelatihan.',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Color(0xFF9CA3AF),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 24),
-              Card(
-                child: Padding(
+                const SizedBox(height: 32),
+                GlossyCard(
                   padding: const EdgeInsets.all(24.0),
                   child: Form(
                     key: _formKey,
@@ -126,9 +129,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       children: [
                         TextFormField(
                           controller: _nameController,
-                          decoration: const InputDecoration(
-                            labelText: 'Nama Lengkap',
-                            prefixIcon: Icon(Icons.person_outline),
+                          style: const TextStyle(color: Color(0xFF1E293B)),
+                          decoration: InputDecoration(
+                            hintText: 'Nama Lengkap',
+                            prefixIcon: const Icon(Icons.person_outline),
+                            filled: true,
+                            fillColor: Colors.white.withOpacity(0.8),
                           ),
                           validator: (value) {
                             if (value == null || value.trim().isEmpty) {
@@ -140,9 +146,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         const SizedBox(height: 16),
                         TextFormField(
                           controller: _emailController,
-                          decoration: const InputDecoration(
-                            labelText: 'Email',
-                            prefixIcon: Icon(Icons.email_outlined),
+                          style: const TextStyle(color: Color(0xFF1E293B)),
+                          decoration: InputDecoration(
+                            hintText: 'Email address',
+                            prefixIcon: const Icon(Icons.email_outlined),
+                            filled: true,
+                            fillColor: Colors.white.withOpacity(0.8),
                           ),
                           keyboardType: TextInputType.emailAddress,
                           validator: (value) {
@@ -158,13 +167,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         const SizedBox(height: 16),
                         TextFormField(
                           controller: _passwordController,
+                          style: const TextStyle(color: Color(0xFF1E293B)),
                           decoration: InputDecoration(
-                            labelText: 'Password',
+                            hintText: 'Password',
                             prefixIcon: const Icon(Icons.lock_outline),
+                            filled: true,
+                            fillColor: Colors.white.withOpacity(0.8),
                             suffixIcon: IconButton(
                               icon: Icon(
                                 _obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined,
-                                color: Colors.grey.shade600,
+                                color: const Color(0xFF9CA3AF),
                               ),
                               onPressed: () {
                                 setState(() {
@@ -185,7 +197,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           },
                         ),
                         const SizedBox(height: 24),
-                        const Text('Jenis Kelamin', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
+                        const Text('Jenis Kelamin', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF1E293B))),
                         const SizedBox(height: 8),
                         Row(
                           children: [
@@ -195,7 +207,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 value: 'L',
                                 groupValue: _jenisKelamin,
                                 contentPadding: EdgeInsets.zero,
-                                activeColor: colorScheme.primary,
+                                activeColor: const Color(0xFF1E293B),
                                 onChanged: (value) {
                                   if (value != null) setState(() => _jenisKelamin = value);
                                 },
@@ -207,7 +219,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 value: 'P',
                                 groupValue: _jenisKelamin,
                                 contentPadding: EdgeInsets.zero,
-                                activeColor: colorScheme.primary,
+                                activeColor: const Color(0xFF1E293B),
                                 onChanged: (value) {
                                   if (value != null) setState(() => _jenisKelamin = value);
                                 },
@@ -216,7 +228,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           ],
                         ),
                         const SizedBox(height: 16),
-
                         // BATCH DROPDOWN
                         FutureBuilder<List<Map<String, dynamic>>>(
                           future: _batchesFuture,
@@ -228,9 +239,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                             return DropdownButtonFormField<int>(
                               initialValue: _selectedBatchId,
-                              decoration: const InputDecoration(
-                                labelText: 'Pilih Batch',
-                                prefixIcon: Icon(Icons.group_outlined),
+                              decoration: InputDecoration(
+                                hintText: 'Pilih Batch',
+                                prefixIcon: const Icon(Icons.group_outlined),
+                                filled: true,
+                                fillColor: Colors.white.withOpacity(0.8),
                               ),
                               isExpanded: true,
                               items: batches.isEmpty
@@ -258,14 +271,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 snapshot.connectionState == ConnectionState.waiting
                                     ? 'Memuat data batch...'
                                     : (batches.isEmpty ? 'Gagal memuat batch' : 'Pilih batch'),
-                                style: TextStyle(color: Colors.grey.shade600),
+                                style: const TextStyle(color: Color(0xFF9CA3AF)),
                               ),
-                              icon: const Icon(Icons.arrow_drop_down_circle_outlined),
+                              icon: const Icon(Icons.arrow_drop_down_outlined, color: Color(0xFF9CA3AF)),
                             );
                           },
                         ),
                         const SizedBox(height: 16),
-
                         // TRAINING DROPDOWN
                         FutureBuilder<List<Map<String, dynamic>>>(
                           future: _trainingsFuture,
@@ -277,9 +289,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
                             return DropdownButtonFormField<int>(
                               initialValue: _selectedTrainingId,
-                              decoration: const InputDecoration(
-                                labelText: 'Pilih Program Pelatihan',
-                                prefixIcon: Icon(Icons.model_training_outlined),
+                              decoration: InputDecoration(
+                                hintText: 'Pilih Program Pelatihan',
+                                prefixIcon: const Icon(Icons.model_training_outlined),
+                                filled: true,
+                                fillColor: Colors.white.withOpacity(0.8),
                               ),
                               isExpanded: true,
                               items: trainings.isEmpty
@@ -305,15 +319,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 snapshot.connectionState == ConnectionState.waiting
                                     ? 'Memuat data training...'
                                     : (trainings.isEmpty ? 'Gagal memuat training' : 'Pilih training'),
-                                style: TextStyle(color: Colors.grey.shade600),
+                                style: const TextStyle(color: Color(0xFF9CA3AF)),
                               ),
-                              icon: const Icon(Icons.arrow_drop_down_circle_outlined),
+                              icon: const Icon(Icons.arrow_drop_down_outlined, color: Color(0xFF9CA3AF)),
                             );
                           },
                         ),
                         const SizedBox(height: 32),
                         ElevatedButton(
                           onPressed: _isLoading ? null : _handleRegister,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF8EC5FC),
+                          ),
                           child: _isLoading
                               ? const SizedBox(
                                   height: 20,
@@ -329,11 +346,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 }
+

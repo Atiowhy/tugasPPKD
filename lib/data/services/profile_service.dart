@@ -3,10 +3,11 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../models/user_model.dart';
-import '../../core/constants/api_constants.dart';
+import 'api_client.dart';
 
 class ProfileService {
   final Dio _dio = Dio();
+  late final ApiClient _apiClient;
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
 
   static const String _tokenKey = 'auth_token';
@@ -14,6 +15,7 @@ class ProfileService {
   ProfileService() {
     _dio.options.headers['Accept'] = 'application/json';
     _dio.options.headers['Content-Type'] = 'application/json';
+    _apiClient = ApiClient(_dio);
   }
 
   /// Mengambil token dan menambahkannya ke header Authorization
@@ -30,8 +32,8 @@ class ProfileService {
     await _setAuthHeader();
 
     try {
-      final response = await _dio.get(ApiConstants.profile);
-      final userData = response.data['data'];
+      final response = await _apiClient.getProfile();
+      final userData = response['data'];
       return UserModel.fromJson(userData);
     } on DioException catch (e) {
       final data = e.response?.data;
@@ -54,15 +56,12 @@ class ProfileService {
     await _setAuthHeader();
 
     try {
-      final response = await _dio.put(
-        ApiConstants.profile,
-        data: {'name': name},
-      );
+      final response = await _apiClient.editProfile({'name': name});
 
       return {
         'success': true,
-        'message': response.data['message'] ?? 'Profil berhasil diperbarui',
-        'user': UserModel.fromJson(response.data['data']),
+        'message': response['message'] ?? 'Profil berhasil diperbarui',
+        'user': UserModel.fromJson(response['data']),
       };
     } on DioException catch (e) {
       final data = e.response?.data;
@@ -110,16 +109,13 @@ class ProfileService {
 
       final dataUri = 'data:$mimeType;base64,$base64String';
 
-      final response = await _dio.put(
-        ApiConstants.profilePhoto,
-        data: {'profile_photo': dataUri},
-      );
+      final response = await _apiClient.editProfilePhoto({'profile_photo': dataUri});
 
       return {
         'success': true,
         'message':
-            response.data['message'] ?? 'Foto profil berhasil diperbarui',
-        'profile_photo': response.data['data']?['profile_photo'],
+            response['message'] ?? 'Foto profil berhasil diperbarui',
+        'profile_photo': response['data']?['profile_photo'],
       };
     } on DioException catch (e) {
       final data = e.response?.data;

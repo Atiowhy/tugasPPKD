@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../data/models/user_model.dart';
 import '../../data/services/profile_service.dart';
+import '../widgets/glossy_widgets.dart';
 
 class EditProfileScreen extends StatefulWidget {
   final UserModel user;
@@ -175,90 +176,88 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Edit Profil', style: TextStyle(fontWeight: FontWeight.w600)),
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const SizedBox(height: 16),
-              Center(
-                child: Stack(
-                  children: [
-                    Container(
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(color: Colors.white, width: 4),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          )
-                        ],
-                      ),
-                      child: CircleAvatar(
-                        radius: 65,
-                        backgroundColor: Colors.white,
-                        backgroundImage: _selectedImage != null
-                            ? FileImage(_selectedImage!)
-                            : (widget.user.profilePhoto != null
-                                    ? NetworkImage(widget.user.profilePhoto!)
-                                    : null) as ImageProvider?,
-                        child: (_selectedImage == null &&
-                                widget.user.profilePhoto == null)
-                            ? Icon(Icons.person, size: 65, color: Colors.grey.shade400)
-                            : null,
-                      ),
-                    ),
-                    Positioned(
-                      bottom: 0,
-                      right: 0,
-                      child: _isSavingPhoto
-                          ? Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: const BoxDecoration(
-                                color: Colors.white,
-                                shape: BoxShape.circle,
-                              ),
-                              child: const SizedBox(
-                                width: 24,
-                                height: 24,
-                                child: CircularProgressIndicator(strokeWidth: 2),
-                              ),
-                            )
-                          : GestureDetector(
-                              onTap: _showImageSourceDialog,
-                              child: Container(
-                                padding: const EdgeInsets.all(10),
-                                decoration: BoxDecoration(
-                                  gradient: const LinearGradient(
-                                    colors: [Color(0xFF4F46E5), Color(0xFF06B6D4)],
-                                  ),
-                                  shape: BoxShape.circle,
-                                  border: Border.all(color: Colors.white, width: 2),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.15),
-                                      blurRadius: 4,
-                                      offset: const Offset(0, 2),
-                                    )
-                                  ],
-                                ),
-                                child: const Icon(Icons.camera_alt, color: Colors.white, size: 20),
-                              ),
+    return GlossyBackground(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          title: const Text('Edit Profil', style: TextStyle(fontWeight: FontWeight.w600)),
+          backgroundColor: Colors.transparent,
+          iconTheme: const IconThemeData(color: Color(0xFF1E293B)),
+        ),
+        body: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 24.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const SizedBox(height: 16),
+                Center(
+                  child: Stack(
+                    children: [
+                      Container(
+                        width: 120,
+                        height: 120,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.white.withOpacity(0.8),
+                          border: Border.all(color: Colors.white, width: 3),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.1),
+                              blurRadius: 16,
+                              offset: const Offset(0, 8),
                             ),
-                    ),
-                  ],
+                          ],
+                        ),
+                        clipBehavior: Clip.antiAlias,
+                        child: _selectedImage != null
+                            ? Image.file(_selectedImage!, fit: BoxFit.cover)
+                            : (widget.user.profilePhoto != null
+                                ? Image.network(
+                                    widget.user.profilePhoto!,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) => const Icon(
+                                      Icons.person,
+                                      size: 60,
+                                      color: Color(0xFF1E293B),
+                                    ),
+                                  )
+                                : const Icon(Icons.person, size: 60, color: Color(0xFF1E293B))),
+                      ),
+                      Positioned(
+                        bottom: 0,
+                        right: 0,
+                        child: _isSavingPhoto
+                            ? Container(
+                                padding: const EdgeInsets.all(8),
+                                decoration: const BoxDecoration(
+                                  color: Colors.white,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const SizedBox(
+                                  width: 24,
+                                  height: 24,
+                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                ),
+                              )
+                            : GestureDetector(
+                                onTap: _showImageSourceDialog,
+                                child: Container(
+                                  padding: const EdgeInsets.all(10),
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFF8EC5FC),
+                                    shape: BoxShape.circle,
+                                    border: Border.all(color: Colors.white, width: 3),
+                                  ),
+                                  child: const Icon(Icons.camera_alt, color: Colors.white, size: 20),
+                                ),
+                              ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(height: 48),
-              Card(
-                child: Padding(
+                const SizedBox(height: 48),
+                GlossyCard(
                   padding: const EdgeInsets.all(24.0),
                   child: Form(
                     key: _formKey,
@@ -267,9 +266,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       children: [
                         TextFormField(
                           controller: _nameController,
-                          decoration: const InputDecoration(
-                            labelText: 'Nama Lengkap',
-                            prefixIcon: Icon(Icons.person_outline),
+                          style: const TextStyle(color: Color(0xFF1E293B)),
+                          decoration: InputDecoration(
+                            hintText: 'Nama Lengkap',
+                            prefixIcon: const Icon(Icons.person_outline),
+                            filled: true,
+                            fillColor: Colors.white.withOpacity(0.8),
                           ),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
@@ -278,19 +280,24 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             return null;
                           },
                         ),
-                        const SizedBox(height: 20),
-                        // Menampilkan email tapi tidak bisa diedit
+                        const SizedBox(height: 16),
                         TextFormField(
                           initialValue: widget.user.email,
-                          decoration: const InputDecoration(
-                            labelText: 'Email',
-                            prefixIcon: Icon(Icons.email_outlined),
+                          style: const TextStyle(color: Color(0xFF9CA3AF)),
+                          decoration: InputDecoration(
+                            hintText: 'Email',
+                            prefixIcon: const Icon(Icons.email_outlined),
+                            filled: true,
+                            fillColor: Colors.white.withOpacity(0.6),
                           ),
                           enabled: false,
                         ),
                         const SizedBox(height: 32),
                         ElevatedButton(
                           onPressed: _isSavingProfile ? null : _handleSaveProfile,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF8EC5FC),
+                          ),
                           child: _isSavingProfile
                               ? const SizedBox(
                                   height: 20,
@@ -306,11 +313,12 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 }
+

@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+
 import '../../data/models/user_model.dart';
 import '../../data/services/auth_service.dart';
+import '../../data/services/data_service.dart';
 import '../../data/services/profile_service.dart';
+import '../../main.dart';
+import '../widgets/glossy_widgets.dart';
 import 'edit_profile_screen.dart';
 import 'login_screen.dart';
 
@@ -15,7 +19,11 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   final ProfileService _profileService = ProfileService();
   final AuthService _authService = AuthService();
+  final DataService _dataService = DataService();
+
   late Future<UserModel> _profileFuture;
+  late Future<List<Map<String, dynamic>>> _batchesFuture;
+  late Future<List<Map<String, dynamic>>> _trainingsFuture;
 
   @override
   void initState() {
@@ -26,6 +34,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   void _loadProfile() {
     setState(() {
       _profileFuture = _profileService.getProfile();
+      _batchesFuture = _dataService.getBatches();
+      _trainingsFuture = _dataService.getTrainings();
     });
   }
 
@@ -40,9 +50,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return Scaffold(
+      backgroundColor: Colors.transparent,
       body: FutureBuilder<UserModel>(
         future: _profileFuture,
         builder: (context, snapshot) {
@@ -53,12 +62,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(Icons.error_outline, size: 64, color: Colors.redAccent),
+                  const Icon(
+                    Icons.error_outline,
+                    size: 64,
+                    color: Colors.redAccent,
+                  ),
                   const SizedBox(height: 16),
                   Text(
                     'Error: ${snapshot.error}',
                     textAlign: TextAlign.center,
-                    style: const TextStyle(color: Colors.redAccent, fontSize: 16),
+                    style: const TextStyle(
+                      color: Colors.redAccent,
+                      fontSize: 16,
+                    ),
                   ),
                   const SizedBox(height: 24),
                   ElevatedButton.icon(
@@ -76,155 +92,440 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 _loadProfile();
                 await _profileFuture;
               },
-              child: CustomScrollView(
-                slivers: [
-                  SliverAppBar(
-                    expandedHeight: 220.0,
-                    pinned: true,
-                    flexibleSpace: FlexibleSpaceBar(
-                      background: Container(
-                        decoration: const BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [Color(0xFF4F46E5), Color(0xFF06B6D4)],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ),
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const SizedBox(height: 40),
-                            Container(
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                border: Border.all(color: Colors.white, width: 3),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.1),
-                                    blurRadius: 8,
-                                    offset: const Offset(0, 4),
-                                  )
-                                ],
-                              ),
-                              child: Container(
-                                width: 90,
-                                height: 90,
-                                decoration: const BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: Colors.white,
-                                ),
-                                clipBehavior: Clip.antiAlias,
-                                child: user.profilePhoto != null
-                                    ? Image.network(
-                                        user.profilePhoto!,
-                                        fit: BoxFit.cover,
-                                        errorBuilder: (context, error, stackTrace) => Icon(
-                                          Icons.person,
-                                          size: 45,
-                                          color: Colors.grey.shade400,
+              child: FutureBuilder(
+                future: Future.wait([_batchesFuture, _trainingsFuture]),
+                builder: (context, dataSnapshot) {
+                  List<Map<String, dynamic>> batches = [];
+                  List<Map<String, dynamic>> trainings = [];
+                  if (dataSnapshot.hasData) {
+                    batches = dataSnapshot.data![0];
+                    trainings = dataSnapshot.data![1];
+                  }
+                  return CustomScrollView(
+                    slivers: [
+                      SliverAppBar(
+                        expandedHeight: 280.0,
+                        pinned: true,
+                        backgroundColor: Colors.transparent,
+                        elevation: 0,
+                        flexibleSpace: FlexibleSpaceBar(
+                          background: Container(
+                            color: Colors.transparent,
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const SizedBox(height: 50),
+                                // Profile Avatar with aesthetic glowing border
+                                Container(
+                                  width: 110,
+                                  height: 110,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.surface,
+                                    border: Border.all(
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.primary.withOpacity(0.5),
+                                      width: 4,
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.primary.withOpacity(0.3),
+                                        blurRadius: 24,
+                                        spreadRadius: 2,
+                                        offset: const Offset(0, 8),
+                                      ),
+                                    ],
+                                  ),
+                                  clipBehavior: Clip.antiAlias,
+                                  child: user.profilePhoto != null
+                                      ? Image.network(
+                                          user.profilePhoto!,
+                                          fit: BoxFit.cover,
+                                          errorBuilder:
+                                              (context, error, stackTrace) =>
+                                                  Icon(
+                                                    Icons.person_rounded,
+                                                    size: 54,
+                                                    color: Theme.of(
+                                                      context,
+                                                    ).colorScheme.primary,
+                                                  ),
+                                        )
+                                      : Icon(
+                                          Icons.person_rounded,
+                                          size: 54,
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.primary,
                                         ),
-                                      )
-                                    : Icon(
-                                        Icons.person,
-                                        size: 45,
-                                        color: Colors.grey.shade400,
+                                ),
+                                const SizedBox(height: 16),
+                                // Quick Name
+                                Text(
+                                  user.name,
+                                  style: Theme.of(context).textTheme.titleLarge
+                                      ?.copyWith(fontWeight: FontWeight.w800),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  user.email,
+                                  style: Theme.of(context).textTheme.bodyMedium
+                                      ?.copyWith(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onSurface
+                                            .withOpacity(0.6),
                                       ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      title: Text(
-                        'Profil Saya',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          shadows: [Shadow(color: Colors.black.withOpacity(0.3), blurRadius: 4)],
-                        ),
-                      ),
-                      centerTitle: true,
-                    ),
-                    actions: [
-                      IconButton(
-                        icon: const Icon(Icons.logout, color: Colors.white),
-                        onPressed: _handleLogout,
-                        tooltip: 'Logout',
-                      ),
-                    ],
-                  ),
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.all(24.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          Card(
-                            child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Column(
-                                children: [
-                                  ListTile(
-                                    leading: Container(
-                                      padding: const EdgeInsets.all(8),
-                                      decoration: BoxDecoration(
-                                        color: colorScheme.primary.withOpacity(0.1),
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: Icon(Icons.person_outline, color: colorScheme.primary),
-                                    ),
-                                    title: const Text('Nama Lengkap', style: TextStyle(fontSize: 12, color: Colors.grey)),
-                                    subtitle: Text(
-                                      user.name,
-                                      style: const TextStyle(fontSize: 16, color: Colors.black87, fontWeight: FontWeight.w500),
-                                    ),
-                                  ),
-                                  Divider(color: Colors.grey.shade200, height: 1),
-                                  ListTile(
-                                    leading: Container(
-                                      padding: const EdgeInsets.all(8),
-                                      decoration: BoxDecoration(
-                                        color: colorScheme.secondary.withOpacity(0.1),
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: Icon(Icons.email_outlined, color: colorScheme.secondary),
-                                    ),
-                                    title: const Text('Email', style: TextStyle(fontSize: 12, color: Colors.grey)),
-                                    subtitle: Text(
-                                      user.email,
-                                      style: const TextStyle(fontSize: 16, color: Colors.black87, fontWeight: FontWeight.w500),
-                                    ),
-                                  ),
-                                ],
-                              ),
+                                ),
+                              ],
                             ),
                           ),
-                          const SizedBox(height: 32),
-                          ElevatedButton.icon(
-                            onPressed: () async {
-                              final result = await Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => EditProfileScreen(user: user),
-                                ),
-                              );
-                              if (result == true) {
-                                _loadProfile();
-                              }
-                            },
-                            icon: const Icon(Icons.edit_outlined),
-                            label: const Text('EDIT PROFIL'),
+
+                          centerTitle: true,
+                        ),
+                        actions: [
+                          IconButton(
+                            icon: Icon(
+                              Icons.logout_rounded,
+                              color: Theme.of(context).colorScheme.error,
+                            ),
+                            onPressed: _handleLogout,
+                            tooltip: 'Logout',
                           ),
                         ],
                       ),
-                    ),
-                  ),
-                ],
+                      SliverToBoxAdapter(
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24.0,
+                            vertical: 16.0,
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              // Personal Info Title
+                              Padding(
+                                padding: const EdgeInsets.only(
+                                  left: 8.0,
+                                  bottom: 12.0,
+                                ),
+                                child: Text(
+                                  'Informasi Personal',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onSurface.withOpacity(0.5),
+                                    letterSpacing: 1,
+                                  ),
+                                ),
+                              ),
+                              // Personal Info Card
+                              GlossyCard(
+                                padding: const EdgeInsets.all(16.0),
+                                child: Column(
+                                  children: [
+                                    _buildInlineTile(
+                                      context: context,
+                                      icon: Icons.person_outline_rounded,
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.secondary,
+                                      title: 'Nama Lengkap',
+                                      value: user.name,
+                                    ),
+                                    Divider(
+                                      color: Theme.of(
+                                        context,
+                                      ).dividerColor.withOpacity(0.1),
+                                      height: 24,
+                                    ),
+                                    _buildInlineTile(
+                                      context: context,
+                                      icon: Icons.email_outlined,
+                                      color: Colors.orange,
+                                      title: 'Alamat Email',
+                                      value: user.email,
+                                    ),
+                                    Divider(
+                                      color: Theme.of(
+                                        context,
+                                      ).dividerColor.withOpacity(0.1),
+                                      height: 24,
+                                    ),
+                                    _buildInlineTile(
+                                      context: context,
+                                      icon: Icons.wc_rounded,
+                                      color: Colors.teal,
+                                      title: 'Jenis Kelamin',
+                                      value:
+                                          user.jenisKelamin != null &&
+                                              user.jenisKelamin!.isNotEmpty
+                                          ? user.jenisKelamin!
+                                          : 'Belum diatur',
+                                    ),
+                                    Divider(
+                                      color: Theme.of(
+                                        context,
+                                      ).dividerColor.withOpacity(0.1),
+                                      height: 24,
+                                    ),
+                                    _buildInlineTile(
+                                      context: context,
+                                      icon: Icons.school_rounded,
+                                      color: Colors.indigo,
+                                      title: 'Data Batch',
+                                      value: _getBatchName(
+                                        user.batch,
+                                        user.batchId,
+                                        batches,
+                                      ),
+                                    ),
+                                    Divider(
+                                      color: Theme.of(
+                                        context,
+                                      ).dividerColor.withOpacity(0.1),
+                                      height: 24,
+                                    ),
+                                    _buildInlineTile(
+                                      context: context,
+                                      icon: Icons.class_outlined,
+                                      color: Colors.purpleAccent,
+                                      title: 'Kelas yang Dipilih',
+                                      value: _getClassName(
+                                        user.training,
+                                        user.trainingId,
+                                        trainings,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 32),
+                              // Preferences Title
+                              Padding(
+                                padding: const EdgeInsets.only(
+                                  left: 8.0,
+                                  bottom: 12.0,
+                                ),
+                                child: Text(
+                                  'Pengaturan Aplikasi',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.bold,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.onSurface.withOpacity(0.5),
+                                    letterSpacing: 1,
+                                  ),
+                                ),
+                              ),
+                              // Dark Mode Card
+                              GlossyCard(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 20,
+                                  vertical: 12,
+                                ),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.all(10),
+                                          decoration: BoxDecoration(
+                                            color:
+                                                MyApp.of(context)?.isDarkMode ==
+                                                    true
+                                                ? Colors.amber.withOpacity(0.1)
+                                                : Colors.indigo.withOpacity(
+                                                    0.1,
+                                                  ),
+                                            borderRadius: BorderRadius.circular(
+                                              12,
+                                            ),
+                                          ),
+                                          child: Icon(
+                                            MyApp.of(context)?.isDarkMode ==
+                                                    true
+                                                ? Icons.dark_mode_rounded
+                                                : Icons.light_mode_rounded,
+                                            color:
+                                                MyApp.of(context)?.isDarkMode ==
+                                                    true
+                                                ? Colors.amber
+                                                : Colors.indigo,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 16),
+                                        Text(
+                                          'Mode Malam',
+                                          style: TextStyle(
+                                            color: Theme.of(
+                                              context,
+                                            ).colorScheme.onSurface,
+                                            fontWeight: FontWeight.w600,
+                                            fontSize: 16,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    Switch(
+                                      value:
+                                          MyApp.of(context)?.isDarkMode ?? true,
+                                      onChanged: (_) {
+                                        MyApp.of(context)?.toggleTheme();
+                                      },
+                                      activeThumbColor: Theme.of(
+                                        context,
+                                      ).colorScheme.primary,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(height: 32),
+                              ElevatedButton.icon(
+                                onPressed: () async {
+                                  final result = await Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) =>
+                                          EditProfileScreen(user: user),
+                                    ),
+                                  );
+                                  if (result == true) {
+                                    _loadProfile();
+                                  }
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Theme.of(
+                                    context,
+                                  ).colorScheme.primary,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 18,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                ),
+                                icon: const Icon(Icons.edit_rounded),
+                                label: const Text(
+                                  'EDIT PROFIL',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 1,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 100), // For bottom nav
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                },
               ),
             );
           } else {
             return const Center(child: Text('Tidak ada data'));
           }
         },
+      ),
+    );
+  }
+
+  String _getBatchName(
+    dynamic batch,
+    int? batchId,
+    List<Map<String, dynamic>> batches,
+  ) {
+    if (batchId != null) {
+      try {
+        final b = batches.firstWhere(
+          (element) => element['id'].toString() == batchId.toString(),
+        );
+        return b['batch_ke'] != null
+            ? 'Angkatan ${b['batch_ke']}'
+            : 'Batch ${b['id']}';
+      } catch (e) {
+        // Not found in list, fallback
+      }
+    }
+    if (batch == null) return 'Belum terdaftar di batch';
+    if (batch is Map) {
+      return batch['name']?.toString() ??
+          batch['title']?.toString() ??
+          'Batch Terdaftar';
+    }
+    return batch.toString();
+  }
+
+  String _getClassName(
+    dynamic training,
+    int? trainingId,
+    List<Map<String, dynamic>> trainings,
+  ) {
+    if (trainingId != null) {
+      try {
+        final t = trainings.firstWhere(
+          (element) => element['id'].toString() == trainingId.toString(),
+        );
+        return t['title']?.toString() ??
+            t['name']?.toString() ??
+            'Training ${t['id']}';
+      } catch (e) {
+        // Not found
+      }
+    }
+    if (training == null) return 'Belum memilih kelas';
+    if (training is Map) {
+      return training['title']?.toString() ??
+          training['name']?.toString() ??
+          'Kelas Terdaftar';
+    }
+    return training.toString();
+  }
+
+  Widget _buildInlineTile({
+    required BuildContext context,
+    required IconData icon,
+    required Color color,
+    required String title,
+    required String value,
+  }) {
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      leading: Container(
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Icon(icon, color: color),
+      ),
+      title: Text(
+        title,
+        style: TextStyle(
+          fontSize: 12,
+          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+        ),
+      ),
+      subtitle: Text(
+        value,
+        style: TextStyle(
+          fontSize: 16,
+          color: Theme.of(context).colorScheme.onSurface,
+          fontWeight: FontWeight.w700,
+        ),
       ),
     );
   }

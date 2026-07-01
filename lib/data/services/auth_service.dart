@@ -1,10 +1,11 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../models/user_model.dart';
-import '../../core/constants/api_constants.dart';
+import 'api_client.dart';
 
 class AuthService {
   final Dio _dio = Dio();
+  late final ApiClient _apiClient;
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
 
   static const String _tokenKey = 'auth_token';
@@ -12,6 +13,7 @@ class AuthService {
   AuthService() {
     _dio.options.headers['Accept'] = 'application/json';
     _dio.options.headers['Content-Type'] = 'application/json';
+    _apiClient = ApiClient(_dio);
   }
 
   /// Register user baru
@@ -26,21 +28,18 @@ class AuthService {
     int? trainingId,
   }) async {
     try {
-      final response = await _dio.post(
-        ApiConstants.register,
-        data: {
-          'name': name,
-          'email': email,
-          'password': password,
-          'jenis_kelamin': jenisKelamin,
-          if (batchId != null) 'batch_id': batchId,
-          if (trainingId != null) 'training_id': trainingId,
-        },
-      );
+      final response = await _apiClient.register({
+        'name': name,
+        'email': email,
+        'password': password,
+        'jenis_kelamin': jenisKelamin,
+        if (batchId != null) 'batch_id': batchId,
+        if (trainingId != null) 'training_id': trainingId,
+      });
 
       return {
         'success': true,
-        'message': response.data['message'] ?? 'Registrasi berhasil',
+        'message': response['message'] ?? 'Registrasi berhasil',
       };
     } on DioException catch (e) {
       final data = e.response?.data;
@@ -74,15 +73,11 @@ class AuthService {
     required String password,
   }) async {
     try {
-      final response = await _dio.post(
-        ApiConstants.login,
-        data: {
-          'email': email,
-          'password': password,
-        },
-      );
+      final responseData = await _apiClient.login({
+        'email': email,
+        'password': password,
+      });
 
-      final responseData = response.data;
       final token = responseData['data']?['token'];
       final userData = responseData['data']?['user'];
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../data/services/auth_service.dart';
+import '../widgets/glossy_widgets.dart';
 import 'login_screen.dart';
 import 'main_screen.dart';
 
@@ -60,14 +61,8 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFF4F46E5), Color(0xFF06B6D4)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
+      backgroundColor: Colors.transparent,
+      body: GlossyBackground(
         child: Center(
           child: FadeTransition(
             opacity: _fadeAnimation,
@@ -77,32 +72,39 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                 Container(
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
+                    color: const Color(0xFF8B5CF6).withOpacity(0.3),
                     shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: const Color(0xFF8B5CF6).withOpacity(0.2),
+                        blurRadius: 20,
+                        offset: const Offset(0, 10),
+                      ),
+                    ],
                   ),
                   child: const Icon(
-                    Icons.school,
+                    Icons.school_rounded,
                     size: 80,
-                    color: Colors.white,
+                    color: Color(0xFF1E293B),
                   ),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 32),
                 const Text(
                   'ABSENSI PPKD',
                   style: TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    letterSpacing: 2,
+                    fontSize: 28,
+                    fontWeight: FontWeight.w800,
+                    color: Color(0xFF1E293B),
+                    letterSpacing: 1.5,
                   ),
                 ),
                 const SizedBox(height: 8),
-                Text(
+                const Text(
                   'Sistem Kehadiran Pelatihan',
                   style: TextStyle(
-                    fontSize: 16,
-                    color: Colors.white.withOpacity(0.9),
-                    letterSpacing: 1,
+                    fontSize: 14,
+                    color: Color(0xFF9CA3AF),
+                    letterSpacing: 0.5,
                   ),
                 ),
               ],
@@ -113,3 +115,5 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     );
   }
 }
+
+
