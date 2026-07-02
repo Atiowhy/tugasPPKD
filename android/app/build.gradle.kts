@@ -18,7 +18,7 @@ android {
     namespace = "com.yows.absenku"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
-z
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17

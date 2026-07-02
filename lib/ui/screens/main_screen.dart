@@ -36,11 +36,13 @@ class _MainScreenState extends State<MainScreen> {
           margin: const EdgeInsets.only(left: 24, right: 24, bottom: 24),
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: Theme.of(context).cardTheme.color ?? Theme.of(context).cardColor,
             borderRadius: BorderRadius.circular(32),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF0F172A).withOpacity(0.08),
+                color: Theme.of(context).brightness == Brightness.dark 
+                    ? Colors.black.withOpacity(0.3) 
+                    : const Color(0xFF0F172A).withOpacity(0.08),
                 blurRadius: 32,
                 spreadRadius: 0,
                 offset: const Offset(0, 12),
@@ -56,24 +58,24 @@ class _MainScreenState extends State<MainScreen> {
                 'Beranda',
                 0,
               ),
-              _buildNavItem(
-                Icons.school_outlined,
-                Icons.school_rounded,
-                'Kelas',
-                1,
-              ),
+              // _buildNavItem(
+              //   Icons.school_outlined,
+              //   Icons.school_rounded,
+              //   'Kelas',
+              //   1,
+              // ),
               _buildNavItem(
                 Icons.history_outlined,
                 Icons.history_rounded,
                 'Riwayat',
                 2,
               ),
-              _buildNavItem(
-                Icons.people_outline,
-                Icons.people_rounded,
-                'Pengguna',
-                3,
-              ),
+              // _buildNavItem(
+              //   Icons.people_outline,
+              //   Icons.people_rounded,
+              //   'Pengguna',
+              //   3,
+              // ),
               _buildNavItem(
                 Icons.person_outline,
                 Icons.person_rounded,

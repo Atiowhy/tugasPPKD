@@ -88,6 +88,56 @@ class AbsensiService {
     }
   }
 
+  /// Submit Izin (POST /api/absen-check-in with status 'izin')
+  Future<Map<String, dynamic>> submitIzin({
+    required String alasanIzin,
+  }) async {
+    await _setAuthHeader();
+
+    try {
+      final now = DateTime.now();
+      final dateStr = "${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}";
+      final timeStr = "${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}";
+
+      final response = await _apiClient.checkIn({
+        'attendance_date': dateStr,
+        'check_in': timeStr,
+        'check_in_lat': 0.0,
+        'check_in_lng': 0.0,
+        'check_in_address': 'Tidak tersedia (Izin)',
+        'status': 'izin',
+        'alasan_izin': alasanIzin,
+      });
+
+      return {
+        'success': true,
+        'message': response['message'] ?? 'Izin berhasil diajukan',
+        'data': response['data'],
+      };
+    } on DioException catch (e) {
+      final data = e.response?.data;
+      String message = 'Gagal mengajukan izin';
+
+      if (data != null && data is Map<String, dynamic>) {
+        if (data.containsKey('message')) {
+          message = data['message'];
+        }
+        if (data.containsKey('errors')) {
+          final errors = data['errors'] as Map<String, dynamic>;
+          final allErrors = errors.values
+              .expand((e) => e is List ? e : [e])
+              .join('\n');
+          message = allErrors;
+        }
+      }
+
+      return {
+        'success': false,
+        'message': message,
+      };
+    }
+  }
+
   /// Check Out (POST /api/absen-check-out)
   /// Body: { latitude, longitude }
   /// Response sukses: { message, data: { ... } }

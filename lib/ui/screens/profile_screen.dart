@@ -9,6 +9,8 @@ import '../widgets/glossy_widgets.dart';
 import 'edit_profile_screen.dart';
 import 'login_screen.dart';
 
+import 'dart:ui' as ui;
+
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
@@ -109,81 +111,96 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         backgroundColor: Colors.transparent,
                         elevation: 0,
                         flexibleSpace: FlexibleSpaceBar(
-                          background: Container(
-                            color: Colors.transparent,
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const SizedBox(height: 50),
-                                // Profile Avatar with aesthetic glowing border
+                          background: Stack(
+                            fit: StackFit.expand,
+                            children: [
+                              // Blurred Background Banner
+                              if (user.profilePhoto != null)
+                                Image.network(
+                                  user.profilePhoto!,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) =>
+                                      Container(color: Theme.of(context).colorScheme.primary.withOpacity(0.1)),
+                                )
+                              else
+                                Container(color: Theme.of(context).colorScheme.primary.withOpacity(0.1)),
+                              
+                              // Blur Effect Overlay
+                              if (user.profilePhoto != null)
                                 Container(
-                                  width: 110,
-                                  height: 110,
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.surface,
-                                    border: Border.all(
-                                      color: Theme.of(
-                                        context,
-                                      ).colorScheme.primary.withOpacity(0.5),
-                                      width: 4,
-                                    ),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Theme.of(
-                                          context,
-                                        ).colorScheme.primary.withOpacity(0.3),
-                                        blurRadius: 24,
-                                        spreadRadius: 2,
-                                        offset: const Offset(0, 8),
+                                  color: Colors.black.withOpacity(0.4),
+                                ),
+                              
+                              // Original Content
+                              Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const SizedBox(height: 50),
+                                  // Profile Avatar with aesthetic gradient border and glow
+                                  Container(
+                                    width: 124,
+                                    height: 124,
+                                    padding: const EdgeInsets.all(3),
+                                    decoration: const BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      gradient: LinearGradient(
+                                        colors: [Color(0xFF38BDF8), Color(0xFF6366F1), Color(0xFFFB7185)],
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
                                       ),
-                                    ],
-                                  ),
-                                  clipBehavior: Clip.antiAlias,
-                                  child: user.profilePhoto != null
-                                      ? Image.network(
-                                          user.profilePhoto!,
-                                          fit: BoxFit.cover,
-                                          errorBuilder:
-                                              (context, error, stackTrace) =>
-                                                  Icon(
-                                                    Icons.person_rounded,
-                                                    size: 54,
-                                                    color: Theme.of(
-                                                      context,
-                                                    ).colorScheme.primary,
-                                                  ),
-                                        )
-                                      : Icon(
-                                          Icons.person_rounded,
-                                          size: 54,
-                                          color: Theme.of(
-                                            context,
-                                          ).colorScheme.primary,
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Color(0x666366F1), // 40% opacity Indigo
+                                          blurRadius: 24,
+                                          spreadRadius: 4,
+                                          offset: Offset(0, 8),
                                         ),
-                                ),
-                                const SizedBox(height: 16),
-                                // Quick Name
-                                Text(
-                                  user.name,
-                                  style: Theme.of(context).textTheme.titleLarge
-                                      ?.copyWith(fontWeight: FontWeight.w800),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  user.email,
-                                  style: Theme.of(context).textTheme.bodyMedium
-                                      ?.copyWith(
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .onSurface
-                                            .withOpacity(0.6),
+                                      ],
+                                    ),
+                                    child: Container(
+                                      padding: const EdgeInsets.all(4), // Inner gap
+                                      decoration: BoxDecoration(
+                                        shape: BoxShape.circle,
+                                        color: Theme.of(context).scaffoldBackgroundColor,
                                       ),
-                                ),
-                              ],
-                            ),
+                                      child: ClipOval(
+                                        child: user.profilePhoto != null
+                                            ? Image.network(
+                                                user.profilePhoto!,
+                                                fit: BoxFit.cover,
+                                                errorBuilder: (context, error, stackTrace) =>
+                                                    Icon(
+                                                      Icons.person_rounded,
+                                                      size: 54,
+                                                      color: Theme.of(context).colorScheme.primary,
+                                                    ),
+                                              )
+                                            : Icon(
+                                                Icons.person_rounded,
+                                                size: 54,
+                                                color: Theme.of(context).colorScheme.primary,
+                                              ),
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 16),
+                                  // Quick Name
+                                  Text(
+                                    user.name,
+                                    style: Theme.of(context).textTheme.titleLarge
+                                        ?.copyWith(fontWeight: FontWeight.w800, color: Colors.white),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    user.email,
+                                    style: Theme.of(context).textTheme.bodyMedium
+                                        ?.copyWith(
+                                          color: Colors.white.withOpacity(0.8),
+                                        ),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
 
                           centerTitle: true,

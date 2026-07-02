@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import 'package:geocoding/geocoding.dart';
+import 'package:geolocator/geolocator.dart';
+
 import '../../data/models/absensi_model.dart';
 import '../../data/models/user_model.dart';
 import '../../data/services/absensi_service.dart';
@@ -24,19 +27,64 @@ class _DashboardScreenState extends State<DashboardScreen> {
   bool _isLoadingData = true;
   final bool _isCheckingIn = false;
   final bool _isCheckingOut = false;
+  bool _isSubmittingIzin = false;
   String? _errorMessage;
+  String _currentAddress = 'Mencari lokasi...';
 
   // Theme colors
-  static const Color _primaryText = Color(0xFF1E293B);
-  static const Color _secondaryText = Color(0xFF9CA3AF);
+  Color get _primaryText => Theme.of(context).colorScheme.onSurface;
+  Color get _secondaryText =>
+      Theme.of(context).colorScheme.onSurface.withOpacity(0.6);
   static const Color _accentBlue = Color(0xFF8EC5FC);
   static const Color _checkInColor = Color(0xFF34D399);
   static const Color _checkOutColor = Color(0xFFFBBF24);
+  static const Color _izinColor = Color(0xFF8B5CF6);
 
   @override
   void initState() {
     super.initState();
     _loadData();
+    _fetchLocation();
+  }
+
+  Future<void> _fetchLocation() async {
+    try {
+      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        if (mounted) setState(() => _currentAddress = 'Lokasi nonaktif');
+        return;
+      }
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+        if (permission == LocationPermission.denied) {
+          if (mounted) setState(() => _currentAddress = 'Izin lokasi ditolak');
+          return;
+        }
+      }
+      if (permission == LocationPermission.deniedForever) {
+        if (mounted) setState(() => _currentAddress = 'Izin ditolak permanen');
+        return;
+      }
+
+      Position position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high);
+      List<Placemark> placemarks =
+          await placemarkFromCoordinates(position.latitude, position.longitude);
+      if (placemarks.isNotEmpty) {
+        Placemark p = placemarks[0];
+        String address = [p.street, p.subLocality, p.locality]
+            .where((e) => e != null && e.isNotEmpty)
+            .join(', ');
+        if (mounted) {
+          setState(() {
+            _currentAddress = address.isEmpty ? 'Lokasi ditemukan' : address;
+          });
+        }
+      }
+    } catch (e) {
+      if (mounted) setState(() => _currentAddress = 'Gagal memuat lokasi');
+    }
   }
 
   Future<void> _loadData() async {
@@ -87,6 +135,89 @@ class _DashboardScreenState extends State<DashboardScreen> {
     );
     if (result == true) {
       _loadData();
+    }
+  }
+
+  Future<void> _handleIzin() async {
+    final alasanController = TextEditingController();
+    final formKey = GlobalKey<FormState>();
+
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Text(
+            'Ajukan Izin',
+            style: TextStyle(fontWeight: FontWeight.w600, color: _primaryText),
+          ),
+          content: Form(
+            key: formKey,
+            child: TextFormField(
+              controller: alasanController,
+              decoration: InputDecoration(
+                labelText: 'Alasan Izin',
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              maxLines: 3,
+              validator: (val) {
+                if (val == null || val.trim().isEmpty)
+                  return 'Alasan harus diisi';
+                return null;
+              },
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text('Batal', style: TextStyle(color: _secondaryText)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: _izinColor,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              onPressed: () {
+                if (formKey.currentState!.validate()) {
+                  Navigator.pop(context, true);
+                }
+              },
+              child: const Text('Kirim', style: TextStyle(color: Colors.white)),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (result == true) {
+      final alasan = alasanController.text.trim();
+      setState(() => _isSubmittingIzin = true);
+
+      final res = await _absensiService.submitIzin(alasanIzin: alasan);
+
+      if (!mounted) return;
+      setState(() => _isSubmittingIzin = false);
+
+      if (res['success']) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(res['message']),
+            backgroundColor: Colors.green,
+          ),
+        );
+        _loadData();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(res['message']), backgroundColor: Colors.red),
+        );
+      }
     }
   }
 
@@ -193,7 +324,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
       appBar: AppBar(
         elevation: 0,
-        title: const Text(
+        title: Text(
           'Dashboard Absensi',
           style: TextStyle(
             fontWeight: FontWeight.w700,
@@ -203,7 +334,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.history_rounded, color: _primaryText),
+            icon: Icon(Icons.history_rounded, color: _primaryText),
             tooltip: 'Riwayat',
             onPressed: () {
               Navigator.push(
@@ -213,7 +344,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             },
           ),
           IconButton(
-            icon: const Icon(Icons.refresh_rounded, color: _primaryText),
+            icon: Icon(Icons.refresh_rounded, color: _primaryText),
             tooltip: 'Refresh',
             onPressed: _loadData,
           ),
@@ -341,7 +472,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               children: [
                 Text(
                   greeting,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: _secondaryText,
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
@@ -350,7 +481,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 const SizedBox(height: 4),
                 Text(
                   _user?.name ?? 'Pengguna',
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: _primaryText,
                     fontSize: 20,
                     fontWeight: FontWeight.w700,
@@ -358,9 +489,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 4),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(Icons.location_on, size: 14, color: _secondaryText),
+                    const SizedBox(width: 4),
+                    Expanded(
+                      child: Text(
+                        _currentAddress,
+                        style: TextStyle(color: _secondaryText, fontSize: 12),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
                 Text(
                   _formatTodayDate(),
-                  style: const TextStyle(color: _secondaryText, fontSize: 13),
+                  style: TextStyle(color: _secondaryText, fontSize: 13, fontWeight: FontWeight.w500),
                 ),
               ],
             ),
@@ -392,7 +539,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
               ),
               const SizedBox(width: 10),
-              const Text(
+              Text(
                 'Status Hari Ini',
                 style: TextStyle(
                   color: _primaryText,
@@ -415,13 +562,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
-                  hasCheckedOut
+                  record?.status == 'izin'
+                      ? 'Izin'
+                      : hasCheckedOut
                       ? 'Selesai'
                       : hasCheckedIn
                       ? 'Sedang Bekerja'
                       : 'Belum Absen',
                   style: TextStyle(
-                    color: hasCheckedIn
+                    color: record?.status == 'izin'
+                        ? _izinColor
+                        : hasCheckedIn
                         ? (hasCheckedOut ? _accentBlue : _checkInColor)
                         : _secondaryText,
                     fontSize: 12,
@@ -521,7 +672,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               const SizedBox(width: 10),
               Text(
                 'Statistik $monthName',
-                style: const TextStyle(
+                style: TextStyle(
                   color: _primaryText,
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -582,7 +733,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         const SizedBox(height: 10),
         Text(
           value,
-          style: const TextStyle(
+          style: TextStyle(
             color: _primaryText,
             fontSize: 22,
             fontWeight: FontWeight.w700,
@@ -591,7 +742,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
         const SizedBox(height: 2),
         Text(
           label,
-          style: const TextStyle(color: _secondaryText, fontSize: 12),
+          style: TextStyle(color: _secondaryText, fontSize: 12),
           textAlign: TextAlign.center,
         ),
       ],
@@ -605,33 +756,53 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final hasCheckedOut =
         todayRecord?.checkOutTime != null &&
         todayRecord!.checkOutTime!.isNotEmpty;
+    final isIzin = todayRecord?.status == 'izin';
 
-    return Row(
+    return Column(
       children: [
-        // Absen Masuk button
-        Expanded(
-          child: _buildActionButton(
-            label: 'Absen Masuk',
-            icon: Icons.login_rounded,
-            color: _checkInColor,
-            isLoading: _isCheckingIn,
-            isDisabled: hasCheckedIn,
-            onPressed: hasCheckedIn ? null : _handleCheckIn,
-          ),
+        Row(
+          children: [
+            // Absen Masuk button
+            Expanded(
+              child: _buildActionButton(
+                label: 'Absen Masuk',
+                icon: Icons.login_rounded,
+                color: _checkInColor,
+                isLoading: _isCheckingIn,
+                isDisabled: hasCheckedIn || isIzin,
+                onPressed: (hasCheckedIn || isIzin) ? null : _handleCheckIn,
+              ),
+            ),
+            const SizedBox(width: 16),
+            // Absen Pulang button
+            Expanded(
+              child: _buildActionButton(
+                label: 'Absen Pulang',
+                icon: Icons.logout_rounded,
+                color: _checkOutColor,
+                isLoading: _isCheckingOut,
+                isDisabled: !hasCheckedIn || hasCheckedOut || isIzin,
+                onPressed: (!hasCheckedIn || hasCheckedOut || isIzin)
+                    ? null
+                    : _handleCheckOut,
+              ),
+            ),
+          ],
         ),
-        const SizedBox(width: 16),
-        // Absen Pulang button
-        Expanded(
-          child: _buildActionButton(
-            label: 'Absen Pulang',
-            icon: Icons.logout_rounded,
-            color: _checkOutColor,
-            isLoading: _isCheckingOut,
-            isDisabled: !hasCheckedIn || hasCheckedOut,
-            onPressed: (!hasCheckedIn || hasCheckedOut)
-                ? null
-                : _handleCheckOut,
-          ),
+        const SizedBox(height: 16),
+        Row(
+          children: [
+            Expanded(
+              child: _buildActionButton(
+                label: 'Ajukan Izin',
+                icon: Icons.edit_document,
+                color: _izinColor,
+                isLoading: _isSubmittingIzin,
+                isDisabled: hasCheckedIn || isIzin,
+                onPressed: (hasCheckedIn || isIzin) ? null : _handleIzin,
+              ),
+            ),
+          ],
         ),
       ],
     );

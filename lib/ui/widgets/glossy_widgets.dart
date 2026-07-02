@@ -7,9 +7,11 @@ class GlossyBackground extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Container(
-      decoration: const BoxDecoration(
-        color: Color(0xFFF9FAFB), // Very soft, cool off-white
+      decoration: BoxDecoration(
+        color: Theme.of(context).scaffoldBackgroundColor,
       ),
       child: Stack(
         children: [
@@ -22,7 +24,7 @@ class GlossyBackground extends StatelessWidget {
               height: 300,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFF0EA5E9).withOpacity(0.15), // Soft Sky Blue glow
+                color: isDark ? const Color(0xFF6366F1).withOpacity(0.15) : const Color(0xFF0EA5E9).withOpacity(0.15),
               ),
               // We use a high blur in a normal Container to make it soft
               foregroundDecoration: const BoxDecoration(
@@ -39,7 +41,7 @@ class GlossyBackground extends StatelessWidget {
               height: 250,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: const Color(0xFFF43F5E).withOpacity(0.05), // Very faint Rose glow at bottom
+                color: isDark ? const Color(0xFFFB7185).withOpacity(0.05) : const Color(0xFFF43F5E).withOpacity(0.05),
               ),
               foregroundDecoration: const BoxDecoration(
                 color: Colors.transparent,

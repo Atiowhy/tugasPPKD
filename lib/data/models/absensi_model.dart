@@ -25,6 +25,10 @@ class AbsensiModel {
   final String? createdAt;
   @JsonKey(name: 'updated_at')
   final String? updatedAt;
+  @JsonKey(name: 'status')
+  final String? status;
+  @JsonKey(name: 'alasan_izin')
+  final String? alasanIzin;
 
   AbsensiModel({
     required this.id,
@@ -38,6 +42,8 @@ class AbsensiModel {
     this.date,
     this.createdAt,
     this.updatedAt,
+    this.status,
+    this.alasanIzin,
   });
 
   static double? _parseDouble(dynamic value) {

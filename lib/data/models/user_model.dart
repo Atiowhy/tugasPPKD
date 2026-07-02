@@ -4,6 +4,7 @@ part 'user_model.g.dart';
 
 @JsonSerializable()
 class UserModel {
+  @JsonKey(name: 'id', fromJson: _parseInt)
   final int id;
   final String name;
   final String email;
@@ -23,9 +24,9 @@ class UserModel {
   @JsonKey(name: 'training')
   final dynamic training;
 
-  @JsonKey(name: 'batch_id')
+  @JsonKey(name: 'batch_id', fromJson: _parseNullableInt)
   final int? batchId;
-  @JsonKey(name: 'training_id')
+  @JsonKey(name: 'training_id', fromJson: _parseNullableInt)
   final int? trainingId;
 
   UserModel({
@@ -53,6 +54,19 @@ class UserModel {
       photo = 'https://appabsensi.mobileprojp.com$photo';
     }
     return photo;
+  }
+
+  static int _parseInt(dynamic value) {
+    if (value is int) return value;
+    if (value is String) return int.tryParse(value) ?? 0;
+    return 0;
+  }
+
+  static int? _parseNullableInt(dynamic value) {
+    if (value == null) return null;
+    if (value is int) return value;
+    if (value is String) return int.tryParse(value);
+    return null;
   }
 
   factory UserModel.fromJson(Map<String, dynamic> json) => _$UserModelFromJson(json);

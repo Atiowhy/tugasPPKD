@@ -18,6 +18,8 @@ AbsensiModel _$AbsensiModelFromJson(Map<String, dynamic> json) => AbsensiModel(
   date: json['attendance_date'] as String?,
   createdAt: json['created_at'] as String?,
   updatedAt: json['updated_at'] as String?,
+  status: json['status'] as String?,
+  alasanIzin: json['alasan_izin'] as String?,
 );
 
 Map<String, dynamic> _$AbsensiModelToJson(AbsensiModel instance) =>
@@ -33,4 +35,6 @@ Map<String, dynamic> _$AbsensiModelToJson(AbsensiModel instance) =>
       'attendance_date': instance.date,
       'created_at': instance.createdAt,
       'updated_at': instance.updatedAt,
+      'status': instance.status,
+      'alasan_izin': instance.alasanIzin,
     };

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../data/models/absensi_model.dart';
 import '../../data/services/absensi_service.dart';
 import '../widgets/glossy_widgets.dart';
@@ -16,8 +17,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
   late Future<List<AbsensiModel>> _historyFuture;
 
   // Theme colors
-  static const Color _primaryText = Color(0xFF1E293B);
-  static const Color _secondaryText = Color(0xFF9CA3AF);
+  Color get _primaryText => Theme.of(context).colorScheme.onSurface;
+  Color get _secondaryText =>
+      Theme.of(context).colorScheme.onSurface.withOpacity(0.6);
   static const Color _accentBlue = Color(0xFF8EC5FC);
   static const Color _checkInColor = Color(0xFF34D399);
   static const Color _checkOutColor = Color(0xFFFBBF24);
@@ -37,14 +39,32 @@ class _HistoryScreenState extends State<HistoryScreen> {
   // --- Date / time helpers ---
 
   String _getIndonesianDay(int weekday) {
-    const days = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
+    const days = [
+      'Senin',
+      'Selasa',
+      'Rabu',
+      'Kamis',
+      'Jumat',
+      'Sabtu',
+      'Minggu',
+    ];
     return days[weekday - 1];
   }
 
   String _getIndonesianMonth(int month) {
     const months = [
-      'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
-      'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember',
+      'Januari',
+      'Februari',
+      'Maret',
+      'April',
+      'Mei',
+      'Juni',
+      'Juli',
+      'Agustus',
+      'September',
+      'Oktober',
+      'November',
+      'Desember',
     ];
     return months[month - 1];
   }
@@ -78,67 +98,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
     return timeStr;
   }
 
-  Future<void> _confirmDelete(AbsensiModel record) async {
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF1E1E2F),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text(
-          'Hapus Absensi',
-          style: TextStyle(color: _primaryText, fontWeight: FontWeight.w600),
-        ),
-        content: Text(
-          'Apakah Anda yakin ingin menghapus data absensi tanggal ${_formatDate(record.date ?? record.createdAt)}?',
-          style: const TextStyle(color: _secondaryText),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Batal', style: TextStyle(color: _secondaryText)),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(ctx, true),
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.redAccent,
-            ),
-            child: const Text('Hapus', style: TextStyle(fontWeight: FontWeight.w600)),
-          ),
-        ],
-      ),
-    );
-
-    if (confirm == true && mounted) {
-      final result = await _absensiService.deleteAbsen(record.id);
-
-      if (!mounted) return;
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(result['message'] ?? 'Operasi selesai'),
-          backgroundColor: result['success'] == true
-              ? _checkInColor.withOpacity(0.9)
-              : Colors.redAccent.withOpacity(0.9),
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        ),
-      );
-
-      if (result['success'] == true) {
-        _refreshData();
-      }
-    }
-  }
-
   void _openMap(double lat, double lng, String title) {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => MapScreen(
-          latitude: lat,
-          longitude: lng,
-          title: title,
-        ),
+        builder: (_) => MapScreen(latitude: lat, longitude: lng, title: title),
       ),
     );
   }
@@ -149,13 +113,12 @@ class _HistoryScreenState extends State<HistoryScreen> {
       backgroundColor: Colors.transparent,
 
       appBar: AppBar(
-
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: _primaryText),
+          icon: Icon(Icons.arrow_back_ios_new_rounded, color: _primaryText),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text(
+        title: Text(
           'Riwayat Absensi',
           style: TextStyle(
             fontWeight: FontWeight.w700,
@@ -213,7 +176,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.error_outline_rounded, size: 56, color: Colors.redAccent),
+            const Icon(
+              Icons.error_outline_rounded,
+              size: 56,
+              color: Colors.redAccent,
+            ),
             const SizedBox(height: 16),
             Text(
               'Gagal memuat data:\n${error.replaceFirst('Exception: ', '')}',
@@ -228,8 +195,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: _accentBlue.withOpacity(0.2),
                 foregroundColor: _accentBlue,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
               ),
             ),
           ],
@@ -251,14 +223,14 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 color: _accentBlue.withOpacity(0.08),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.history_rounded,
                 size: 56,
                 color: _secondaryText,
               ),
             ),
             const SizedBox(height: 24),
-            const Text(
+            Text(
               'Belum Ada Riwayat',
               style: TextStyle(
                 color: _primaryText,
@@ -267,13 +239,10 @@ class _HistoryScreenState extends State<HistoryScreen> {
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
+            Text(
               'Data riwayat absensi Anda akan\nmuncul di sini setelah melakukan absen.',
               textAlign: TextAlign.center,
-              style: TextStyle(
-                color: _secondaryText,
-                fontSize: 14,
-              ),
+              style: TextStyle(color: _secondaryText, fontSize: 14),
             ),
           ],
         ),
@@ -283,8 +252,11 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   Widget _buildHistoryItem(AbsensiModel record) {
     final dateStr = record.date ?? record.createdAt;
-    final hasCheckIn = record.checkInTime != null && record.checkInTime!.isNotEmpty;
-    final hasCheckOut = record.checkOutTime != null && record.checkOutTime!.isNotEmpty;
+    final isIzin = record.status == 'izin';
+    final hasCheckIn =
+        record.checkInTime != null && record.checkInTime!.isNotEmpty;
+    final hasCheckOut =
+        record.checkOutTime != null && record.checkOutTime!.isNotEmpty;
 
     return GlossyCard(
       margin: const EdgeInsets.only(bottom: 12),
@@ -301,54 +273,53 @@ class _HistoryScreenState extends State<HistoryScreen> {
                   color: _accentBlue.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(Icons.calendar_today_rounded, color: _accentBlue, size: 18),
+                child: const Icon(
+                  Icons.calendar_today_rounded,
+                  color: _accentBlue,
+                  size: 18,
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
                   _formatDate(dateStr),
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: _primaryText,
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
               ),
-              SizedBox(
-                width: 36,
-                height: 36,
-                child: IconButton(
-                  icon: const Icon(Icons.delete_outline_rounded, size: 20),
-                  color: Colors.redAccent.withOpacity(0.7),
-                  padding: EdgeInsets.zero,
-                  tooltip: 'Hapus',
-                  onPressed: () => _confirmDelete(record),
-                ),
-              ),
             ],
           ),
           const SizedBox(height: 16),
 
-          // Check-in row
-          _buildTimeRow(
-            dotColor: _checkInColor,
-            label: 'Masuk',
-            time: _formatTime(record.checkInTime),
-            isActive: hasCheckIn,
-          ),
-          const SizedBox(height: 10),
+          if (isIzin) ...[
+            _buildIzinInfo(record.alasanIzin ?? '-'),
+          ] else ...[
+            // Check-in row
+            _buildTimeRow(
+              dotColor: _checkInColor,
+              label: 'Masuk',
+              time: _formatTime(record.checkInTime),
+              isActive: hasCheckIn,
+            ),
+            const SizedBox(height: 10),
 
-          // Check-out row
-          _buildTimeRow(
-            dotColor: Colors.redAccent,
-            label: 'Pulang',
-            time: _formatTime(record.checkOutTime),
-            isActive: hasCheckOut,
-          ),
+            // Check-out row
+            _buildTimeRow(
+              dotColor: Colors.redAccent,
+              label: 'Pulang',
+              time: _formatTime(record.checkOutTime),
+              isActive: hasCheckOut,
+            ),
+          ],
 
           // Location info
-          if ((record.checkInLatitude != null && record.checkInLongitude != null) ||
-              (record.checkOutLatitude != null && record.checkOutLongitude != null)) ...[
+          if ((record.checkInLatitude != null &&
+                  record.checkInLongitude != null) ||
+              (record.checkOutLatitude != null &&
+                  record.checkOutLongitude != null)) ...[
             const SizedBox(height: 14),
             Container(
               width: double.infinity,
@@ -360,9 +331,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Row(
+                  Row(
                     children: [
-                      Icon(Icons.location_on_outlined, color: _secondaryText, size: 16),
+                      Icon(
+                        Icons.location_on_outlined,
+                        color: _secondaryText,
+                        size: 16,
+                      ),
                       SizedBox(width: 6),
                       Text(
                         'Lokasi',
@@ -375,14 +350,16 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     ],
                   ),
                   const SizedBox(height: 8),
-                  if (record.checkInLatitude != null && record.checkInLongitude != null)
+                  if (record.checkInLatitude != null &&
+                      record.checkInLongitude != null)
                     _buildLocationRow(
                       label: 'Masuk',
                       lat: record.checkInLatitude!,
                       lng: record.checkInLongitude!,
                       color: _checkInColor,
                     ),
-                  if (record.checkOutLatitude != null && record.checkOutLongitude != null) ...[
+                  if (record.checkOutLatitude != null &&
+                      record.checkOutLongitude != null) ...[
                     const SizedBox(height: 6),
                     _buildLocationRow(
                       label: 'Pulang',
@@ -415,14 +392,20 @@ class _HistoryScreenState extends State<HistoryScreen> {
             color: isActive ? dotColor : _secondaryText.withOpacity(0.3),
             shape: BoxShape.circle,
             boxShadow: isActive
-                ? [BoxShadow(color: dotColor.withOpacity(0.4), blurRadius: 6, spreadRadius: 1)]
+                ? [
+                    BoxShadow(
+                      color: dotColor.withOpacity(0.4),
+                      blurRadius: 6,
+                      spreadRadius: 1,
+                    ),
+                  ]
                 : null,
           ),
         ),
         const SizedBox(width: 12),
         Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             color: _secondaryText,
             fontSize: 13,
             fontWeight: FontWeight.w500,
@@ -463,20 +446,71 @@ class _HistoryScreenState extends State<HistoryScreen> {
             const SizedBox(width: 8),
             Text(
               '$label: ',
-              style: TextStyle(color: color, fontSize: 12, fontWeight: FontWeight.w500),
+              style: TextStyle(
+                color: color,
+                fontSize: 12,
+                fontWeight: FontWeight.w500,
+              ),
             ),
             Expanded(
               child: Text(
                 '${lat.toStringAsFixed(6)}, ${lng.toStringAsFixed(6)}',
-                style: const TextStyle(color: _secondaryText, fontSize: 12),
+                style: TextStyle(color: _secondaryText, fontSize: 12),
                 overflow: TextOverflow.ellipsis,
               ),
             ),
-            Icon(Icons.open_in_new_rounded, color: _accentBlue.withOpacity(0.6), size: 14),
+            Icon(
+              Icons.open_in_new_rounded,
+              color: _accentBlue.withOpacity(0.6),
+              size: 14,
+            ),
           ],
         ),
       ),
     );
   }
-}
 
+  Widget _buildIzinInfo(String alasan) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFF8B5CF6).withOpacity(0.1),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFF8B5CF6).withOpacity(0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(
+                Icons.info_outline_rounded,
+                color: Color(0xFF8B5CF6),
+                size: 18,
+              ),
+              const SizedBox(width: 8),
+              const Text(
+                'Status: Izin',
+                style: TextStyle(
+                  color: Color(0xFF8B5CF6),
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Alasan:\n$alasan',
+            style: TextStyle(
+              color: _primaryText,
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
